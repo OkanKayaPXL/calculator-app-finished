@@ -43,7 +43,6 @@ jobs:
 
       # Better code coverage reporting (default settings)
       # This action auto-detects common formats (LCOV/Clover) from coverage/*, no extra inputs needed
-      - name: Coverage summary
-        uses: mridang/coverage-reporter-action@v1.5.0
-        if: success() || failure()
+      - name: Better Test Reports Action
+        uses: mridang/action-test-reporter@v1.7.0
         # Default behavior reads coverage/lcov.info or Clover files, and writes a rich summary to the run [web:116][web:114]
