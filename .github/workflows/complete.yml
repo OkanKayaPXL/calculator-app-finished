@@ -45,6 +45,8 @@ jobs:
       - name: unittests npm
         run: npm test
 
-
       - name: Test Reporter
         uses: dorny/test-reporter@v2.1.1
+        with:
+            name: npm unit tests
+        
