@@ -49,4 +49,6 @@ jobs:
         uses: dorny/test-reporter@v2.1.1
         with:
             name: npm unit tests
+            path: reports/jest-junit.xml
+            reporter: jest-junit       # parse Jest JUnit output
         
