@@ -1,25 +1,43 @@
-name: test
+name: Build Example
 
 on:
-  pull_request:
   push:
-permissions:
-  contents: read
-  actions: read
-  checks: write
-jobs:
-  build-test:
-    name: Build & Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4     # checkout the repo
-      - run: npm ci                   # install packages
-      - run: npm test                 # run tests (configured to use jest-junit reporter)
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-      - name: Test Report
-        uses: dorny/test-reporter@v2
-        if: ${{ !cancelled() }}       # run this step even if previous step failed
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4  # required to get repo files on runner [web:52]
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          name: JEST Tests            # Name of the check run which will be created
-          path: reports/jest-*.xml    # Path to test results
-          reporter: jest-junit
+          node-version: 20
+          cache: npm                 # lockfile-based npm cache [web:52]
+
+      - name: Install dependencies
+        run: npm install            # switch to npm ci once lockfile is fixed [web:52]
+
+      - name: Run unit tests with coverage
+        run: |
+          npm test -- --coverage    # Jest writes coverage/* including lcov.info by default [web:113][web:116]
+
+      - name: Bundle ZIP (app + node_modules)
+        run: |
+          zip -r app-bundle.zip . \
+            -x ".git/*" ".github/*" "node_modules/.cache/*" "*.log"
+        # Produces app-bundle.zip at repo root
+
+
+      # Better code coverage reporting (default settings)
+      # This action auto-detects common formats (LCOV/Clover) from coverage/*, no extra inputs needed
+      - name: Coverage summary
+        uses: dorny/test-reporter@v2
+        if: success() || failure()
+        # Default behavior reads coverage/lcov.info or Clover files, and writes a rich summary to the run [web:116][web:114]
